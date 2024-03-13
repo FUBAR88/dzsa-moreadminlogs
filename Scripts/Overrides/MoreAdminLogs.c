@@ -1,12 +1,14 @@
 
 class MoreAdminLogs extends PluginBase
 {
-	const int LOG_MORE_ADMIN_LOGS_VERSION = 6;
+	const int LOG_MORE_ADMIN_LOGS_VERSION = 7;
 	
 	ref map<string, bool> eventsFilters;
 	ref MoreAdminLogsHelper _helper;
 	int mal_PlayerMovementPosition;
-	
+
+	FileHandle _logFile;
+
     void MoreAdminLogs()
     {
 		
@@ -89,7 +91,8 @@ class MoreAdminLogs extends PluginBase
 		this._helper = new MoreAdminLogsHelper(IsJson(), IsOverride());
 		
 		if (IsEnabled()) {
-			string message = string.Format("*  More Admin Logs :: version=<%1> json=<%2> override=<%3> positions=<%4>", LOG_MORE_ADMIN_LOGS_VERSION, IsJson(), IsOverride(), mal_PlayerMovementPosition);
+			openLogFile();
+			string message = string.Format("*  More Admin Logs :: version=<%1> json=<%2> override=<%3> positions=<%4> start=<%5>", LOG_MORE_ADMIN_LOGS_VERSION, IsJson(), IsOverride(), mal_PlayerMovementPosition, GetLogTS());
 			DirectLog(message);
 			string jsonMessage = "";
 			foreach (string key1: codes) {
@@ -104,14 +107,60 @@ class MoreAdminLogs extends PluginBase
 					DirectLog(message);
 				}
 			}
-			DirectLog(string.Format("JSON{\"moreAdminLogs\":%1,\"version\":%2,\"json\":%3,\"override\":%4,\"config\":{%5}, \"positions\": %6}", IsEnabled(), LOG_MORE_ADMIN_LOGS_VERSION, IsJson(), IsOverride(), jsonMessage, mal_PlayerMovementPosition));
+			DirectLog(string.Format("{\"moreAdminLogs\":%1,\"version\":%2,\"json\":%3,\"override\":%4,\"config\":{%5}, \"positions\": %6, \"ts\": \"%7\"}", IsEnabled(), LOG_MORE_ADMIN_LOGS_VERSION, IsJson(), IsOverride(), jsonMessage, mal_PlayerMovementPosition, GetLogTS()));
 		}
     }
 
     void ~MoreAdminLogs()
     {
+		if (this._logFile) {
+			CloseFile(this._logFile)
+		}
 		delete this._helper;
 		delete this.eventsFilters;
+	}
+
+	void openLogFile() {
+		string date = GetDateStr("-")
+		string time = GetTimeStr("-")
+		string path = string.Format("$profile:adm_%1_%2", date, time);
+		if (IsJson()) path = path + ".ljson";
+		else path = path + ".log";
+		this._logFile = OpenFile(path, FileMode.WRITE)
+	}
+
+	string GetDateStr(string delimiter) {
+		int year, month, day;
+		GetYearMonthDay(year, month, day);
+		// FullTimeData ft = new FullTimeData();
+		// string path = string.Format("$profile:mal_%1_%2_%3", ft.m_Days, ft.m_Hours, ft.m_Minutes);
+		string sMonth = month.ToString();
+		string sDay = day.ToString();
+		if (sMonth.Length() == 1) {
+			sMonth = "0" + sMonth;
+		}
+		if (sDay.Length() == 1) {
+			sDay = "0" + sDay;
+		}
+		return year.ToString() + delimiter + sMonth + delimiter + sDay;
+	}
+	
+	string GetTimeStr(string delimiter) {
+		int hour, min, sec;
+		GetHourMinuteSecond(hour, min, sec);
+		string sHour = hour.ToString();
+		string sMin = min.ToString();
+		string sSec = sec.ToString();
+		if (sHour.Length() == 1) {
+			sHour = "0" + sHour;
+		}
+		if (sMin.Length() == 1) {
+			sMin = "0" + sMin;
+		}
+		if (sSec.Length() == 1) {
+			sSec = "0" + sSec;
+		}
+		return sHour + delimiter + sMin + delimiter + sSec;
 	}
 	
 	MoreAdminLogsHelper helper() {
@@ -759,6 +808,12 @@ class MoreAdminLogs extends PluginBase
 
 	////////////////////////
 	
+	string GetLogTS() {
+		string date = GetDateStr("-");
+		string time = GetTimeStr(":");
+		return date + "T" + time;
+	}
+
 	void PlayerLog(PlayerBase player,  string source, string message, bool withStatsOrPass = false) 
 	{
 		if (!FilterPass(source)) return;
@@ -767,8 +822,9 @@ class MoreAdminLogs extends PluginBase
 			return;
 		}
 		string playerInfo = _helper.PlayerInfo( player, withStatsOrPass );
-		string msg = string.Format("[%1] - [%3] - [%2]", source, playerInfo, message);
-		if (IsJson()) msg = string.Format("JSON{\"event\":\"%1\",\"data\":%3,\"player\":%2}", source, playerInfo, message);
+		string ts = GetLogTS();
+		string msg = string.Format("[%4] - [%1] - [%3] - [%2]", source, playerInfo, message, ts);
+		if (IsJson()) msg = string.Format("{\"ts\":\"%4\",\"event\":\"%1\",\"data\":%3,\"player\":%2}", source, playerInfo, message, ts);
 		player.ResetPositionLogTimer();
 		DirectLog(msg);
 	}
@@ -781,14 +837,15 @@ class MoreAdminLogs extends PluginBase
 			if (IsNoWorld() && !passNoWorld) return;
 			if (!FilterPass(source)) return;
 		}
-		string msg = string.Format("[%1] - [%2]", source, message);
-		if (IsJson()) msg = string.Format("JSON{\"event\":\"%1\",\"data\":%2}", source, message);
+		string ts = GetLogTS();
+		string msg = string.Format("[%3] - [%1] - [%2]", source, message, ts);
+		if (IsJson()) msg = string.Format("{\"ts\":\"%4\",\"event\":\"%1\",\"data\":%2}", source, message, ts);
 		DirectLog(msg);
 	}
 	
 	void DirectLog(string message)
 	{
-		GetGame().AdminLog(message);
+		FPrintln(this._logFile, message)
 	}
 
 

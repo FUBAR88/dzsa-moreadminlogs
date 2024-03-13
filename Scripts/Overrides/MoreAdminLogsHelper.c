@@ -263,7 +263,10 @@ class MoreAdminLogsHelper
 	{
 		if (!player) return "null";
 
-		string body = Vector3Info(player.GetDirection());
+		vector heading = MiscGameplayFunctions.GetHeadingVector(player);
+		string body = Vector3Info(heading);
+
+		// string body = Vector3Info(player.GetDirection());
 		string head = "null";
 		string neck = "null";
 		string spine1 = "null";
@@ -311,8 +314,9 @@ class MoreAdminLogsHelper
 		
 		string stats = PlayerStatsLine(player);
 		string pos = Vector3Info(player.GetPosition());
-		
-		string body = Vector3Info(player.GetDirection());
+		vector heading = MiscGameplayFunctions.GetHeadingVector(player);
+		string body = Vector3Info(heading);
+		// string body = Vector3Info(player.GetDirection());
 		//string skeleton = PlayerSkelton(player);
 
 		PlayerIdentity pIdentity = player.GetIdentity();
