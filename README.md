@@ -106,14 +106,29 @@ moreAdminLogs/
 
 ## 🔧 Installation
 
-1. **Download the mod files**
-2. **Place in your server's mod directory**
+### Option 1: Profiles Directory (Recommended)
+1. **Create a `moreAdminLogs` folder in your server's `Profiles` directory**
+2. **Place the mod files in this folder**
 3. **Add to your server startup parameters:**
    ```
    -serverMod=moreAdminLogs
    ```
 4. **Configure logging settings in the config files**
 5. **Restart your server**
+
+### Option 2: Fallback Directory
+1. **Place the mod files in your server's mod directory**
+2. **Add to your server startup parameters:**
+   ```
+   -serverMod=moreAdminLogs
+   ```
+3. **Configure logging settings in the config files**
+4. **Restart your server**
+
+### Installation Notes
+- **Profiles Directory**: This option is recommended as it keeps your enhanced version separate from existing installations
+- **Fallback Directory**: Use this option if you want to replace an existing moreAdminLogs installation
+- **Compatibility**: The enhanced version maintains compatibility with the original mod structure
 
 ## ⚙️ Configuration
 
