@@ -107,6 +107,9 @@ moreAdminLogs/
 ## 🔧 Installation
 
 ### Option 1: Profiles Directory (Recommended)
+   ```
+   $profiles\MoreAdminLogs\adm_2025-07-08_02-03-49.ljson
+   ```
 1. **Create a `moreAdminLogs` folder in your server's `Profiles` directory**
 2. **Place the mod files in this folder**
 3. **Add to your server startup parameters:**
@@ -117,6 +120,9 @@ moreAdminLogs/
 5. **Restart your server**
 
 ### Option 2: Fallback Directory
+   ```
+   $profiles\adm_2025-07-08_02-03-49.ljson
+   ```
 1. **Place the mod files in your server's mod directory**
 2. **Add to your server startup parameters:**
    ```
